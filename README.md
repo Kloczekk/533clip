@@ -1,6 +1,6 @@
 # 533clip
 
-High-performance, local-first OBS clip manager (Tauri + React + Rust).
+Lightweight, local-first clip manager for storing, viewing, trimming, and tagging gameplay clips without bloat.
 
 ## Prerequisites
 
@@ -16,27 +16,27 @@ npm install
 npm run tauri dev
 ```
 
-## Features (current)
+## Features
 
-- Watches OBS clip folder (`.mp4`, `.mkv`, `.mov`) with remux-friendly handling
-- **Use OBS folder** reads paths from OBS profile `basic.ini`
+- Watches a clip folder for new `.mp4`, `.mkv`, and `.mov` files
+- Shows an in-app popup when a new clip is detected
+- Runs in the system tray when the window is closed
+- Settings tab for clip folder setup
+- **Use OBS folder** can read the OBS recording path from profile `basic.ini`
 - Saved watch folder persists in `settings.json` across restarts
 - Scans the folder on startup for clips not yet in the library
-- Job queue: metadata (ffprobe) + thumbnails (ffmpeg), no CMD windows
+- Job queue for metadata (`ffprobe`), thumbnails (`ffmpeg`), and trims
 - JSON library in app data (`533clip/clips.json`)
-- Dashboard grid grouped by date, favorites filter, tags
+- Dashboard grid grouped by date, favorites filter, search, and tags
+- Player with trim timeline, volume, playback speed, and previous/next clip switching
 
-## OBS setup tips
+## Setup
 
-1. In OBS: **Settings → Output → Recording** — note the path (often `Videos`).
-2. In 533clip: **Use OBS folder** (sidebar) or **Browse…** to pick that same folder.
-3. Replay buffer / recordings should write there; remux to `.mp4` in OBS if you use `.mkv` temporarily.
-4. **WebSocket** (for “Replay saved” toast): OBS → **Tools → WebSocket Server Settings** → enable server, copy password into 533clip sidebar → **OBS WebSocket** → **Save OBS connection**. Green dot = connected.
+1. Open **Settings** in 533clip.
+2. Pick the folder where your clips are saved.
+3. Use **Use OBS folder** if you want 533clip to detect your OBS recording folder automatically.
+4. Save clips into that folder. 533clip will detect them directly; OBS WebSocket is not required.
 
-## Player
-
-- **Volume** and **Speed** (0.25×–1× slow motion) sliders in the clip player; values are remembered between sessions.
-
-## Data location
+## Data Location
 
 `%APPDATA%\com.five33clip.app\533clip\` (`clips.json`, `tags.json`, `settings.json`)
