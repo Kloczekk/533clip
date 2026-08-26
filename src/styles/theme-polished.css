@@ -1,0 +1,95 @@
+/* src/styles/theme-polished.css */
+
+/* Overrides for Polished UI (Amber Dark) */
+:root {
+  --bg: #141416;
+  --bg-elevated: #1a1a1d;
+  --sidebar: #1c1c20;
+  --surface: #232328;
+  --border: #2c2c33;
+  --text: #f4f4f5;
+  --muted: #a1a1aa;
+}
+
+/* Force solid dark bg regardless of animation settings to match the crisp flat look of the mockup */
+.app-shell, .app-shell.bg-animated, .app-shell.bg-solid, .app-shell.bg-custom {
+  background: var(--bg) !important;
+}
+
+.app-shell::after, .app-shell::before, .bg-custom::before {
+  display: none !important;
+}
+
+/* Ensure side panel matches */
+.sidebar {
+  background: var(--sidebar) !important;
+  border-right: 1px solid var(--border) !important;
+}
+
+/* Make Library active state look like the solid amber pill */
+.nav-item.active {
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.25) 0%, rgba(245, 158, 11, 0.05) 100%) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(245, 158, 11, 0.2) !important;
+}
+
+.nav-item:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Make the game items more distinct when hovered */
+.nav-game-row:hover .nav-item {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Search bar styling */
+.search-input, .library-search input, .toolbar-search input, .search-container input {
+  background: #18181b !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+}
+
+/* Tags in toolbar */
+.tag-chip, .tag-chip-wrap {
+  border-radius: 999px !important;
+  background: transparent !important;
+  border-color: var(--border) !important;
+}
+.tag-chip.active, .tag-chip-wrap:has(.tag-chip.active) {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  background: rgba(245, 158, 11, 0.08) !important;
+}
+.tag-chip:hover {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: var(--text) !important;
+}
+
+/* Clip Cards */
+.clip-card {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 12px !important;
+}
+.clip-card:hover {
+  border-color: var(--accent) !important;
+  background: var(--surface) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
+}
+.clip-card .thumb-wrap {
+  border-radius: 8px !important;
+  border: 1px solid var(--border) !important;
+  overflow: hidden !important;
+}
+.clip-card:hover .thumb-wrap {
+  border-color: var(--accent) !important;
+}
+
+/* Clip Meta */
+.clip-meta {
+  padding-left: 0.2rem !important;
+  padding-right: 0.2rem !important;
+}
+
+/* Fix settings panel animation delay */
+.settings-section { animation: none !important; opacity: 1 !important; transform: none !important; }

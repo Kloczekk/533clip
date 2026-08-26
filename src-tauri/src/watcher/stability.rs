@@ -4,8 +4,8 @@ use std::time::Duration;
 use tokio::time::sleep;
 use tracing::{debug, warn};
 
-const POLL_INTERVAL: Duration = Duration::from_millis(400);
-const STABLE_SAMPLES: u32 = 3;
+const POLL_INTERVAL: Duration = Duration::from_millis(250);
+const STABLE_SAMPLES: u32 = 8;
 const MAX_WAIT: Duration = Duration::from_secs(120);
 
 /// Waits until the file size is unchanged across several consecutive samples.

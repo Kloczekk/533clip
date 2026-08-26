@@ -8,7 +8,7 @@ pub enum TrimError {
     Failed(String),
 }
 
-/// Lossless trim using stream copy (`-c copy`). Never modifies the source file.
+/// Accurate trim. Never modifies the source file.
 pub fn trim_lossless(
     input: &Path,
     output: &Path,
@@ -28,17 +28,30 @@ pub fn trim_lossless(
     let dur = format!("{duration:.3}");
 
     let output_status = hidden_command("ffmpeg")
+        .args(["-hide_banner", "-loglevel", "error", "-y", "-i"])
+        .arg(input)
         .args([
-            "-hide_banner",
-            "-loglevel",
-            "error",
-            "-y",
             "-ss",
             &start,
-            "-i",
+            "-t",
+            &dur,
+            "-map",
+            "0:v:0",
+            "-map",
+            "0:a?",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "veryfast",
+            "-crf",
+            "18",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "192k",
+            "-movflags",
+            "+faststart",
         ])
-        .arg(input)
-        .args(["-t", &dur, "-c", "copy", "-avoid_negative_ts", "make_zero"])
         .arg(output)
         .output()
         .map_err(|e| TrimError::Failed(format!("could not run ffmpeg: {e}")))?;

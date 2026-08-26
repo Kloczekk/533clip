@@ -31,19 +31,12 @@ impl TagRegistryStore {
     }
 
     fn load(&self) -> Result<TagRegistry, TagStoreError> {
-        if !self.path.exists() {
-            return Ok(TagRegistry::default());
-        }
-        let raw = std::fs::read_to_string(&self.path)?;
-        if raw.trim().is_empty() {
-            return Ok(TagRegistry::default());
-        }
-        Ok(serde_json::from_str(&raw)?)
+        Ok(super::load_json_or_default(&self.path)?)
     }
 
     fn save(&self, registry: &TagRegistry) -> Result<(), TagStoreError> {
         let json = serde_json::to_string_pretty(registry)?;
-        std::fs::write(&self.path, json)?;
+        super::atomic_write(&self.path, &json)?;
         Ok(())
     }
 
@@ -76,7 +69,10 @@ impl TagRegistryStore {
     }
 }
 
-pub fn merge_tags_from_clips(known: Vec<String>, clip_tags: impl Iterator<Item = String>) -> Vec<String> {
+pub fn merge_tags_from_clips(
+    known: Vec<String>,
+    clip_tags: impl Iterator<Item = String>,
+) -> Vec<String> {
     let mut set: BTreeSet<String> = known.into_iter().map(|t| t.to_lowercase()).collect();
     for t in clip_tags {
         let n = t.trim().to_lowercase();

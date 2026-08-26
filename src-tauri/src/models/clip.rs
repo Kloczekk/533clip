@@ -19,13 +19,25 @@ pub struct Clip {
     pub file_name: String,
     #[serde(default)]
     pub display_name: Option<String>,
+    #[serde(default)]
+    pub game_name: Option<String>,
     pub created_at: String,
     pub duration: Option<f64>,
+    #[serde(default)]
+    pub audio_peaks: Option<Vec<f64>>,
+    #[serde(default)]
+    pub waveform: Option<Vec<f32>>,
     pub resolution: Option<String>,
     pub thumbnail_path: Option<String>,
     pub is_favorite: bool,
     pub tags: Vec<String>,
     pub status: ClipStatus,
+    #[serde(default)]
+    pub share_url: Option<String>,
+    #[serde(default)]
+    pub share_key: Option<String>,
+    #[serde(default)]
+    pub shared_at: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -35,6 +47,7 @@ pub struct ClipDetectedPayload {
     pub file_path: String,
     pub file_name: String,
     pub created_at: String,
+    pub game_name: Option<String>,
 }
 
 pub fn stable_clip_id(path: &Path, created_at: DateTime<Utc>) -> String {
@@ -62,22 +75,18 @@ pub fn clip_from_path(path: &Path, status: ClipStatus) -> std::io::Result<Clip> 
         file_path: path.to_string_lossy().into_owned(),
         file_name,
         display_name: None,
+        game_name: None,
         created_at: created_at.to_rfc3339(),
         duration: None,
+        audio_peaks: None,
+        waveform: None,
         resolution: None,
         thumbnail_path: None,
         is_favorite: false,
         tags: Vec::new(),
         status,
-    })
-}
-
-pub fn clip_detected_payload(path: &Path) -> std::io::Result<ClipDetectedPayload> {
-    let clip = clip_from_path(path, ClipStatus::Processing)?;
-    Ok(ClipDetectedPayload {
-        id: clip.id,
-        file_path: clip.file_path,
-        file_name: clip.file_name,
-        created_at: clip.created_at,
+        share_url: None,
+        share_key: None,
+        shared_at: None,
     })
 }

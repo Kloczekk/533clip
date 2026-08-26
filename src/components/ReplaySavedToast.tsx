@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 
 interface ReplaySavedPayload {
-  message: string;
-  savedPath?: string;
+  fileName: string;
+  filePath: string;
+  gameName?: string;
 }
 
 const DISMISS_MS = 4500;
@@ -12,7 +13,7 @@ export function ReplaySavedToast() {
   const [toast, setToast] = useState<ReplaySavedPayload | null>(null);
 
   useEffect(() => {
-    const unlisten = listen<ReplaySavedPayload>("obs://replay-saved", (event) => {
+    const unlisten = listen<ReplaySavedPayload>("clip://detected", (event) => {
       setToast(event.payload);
     });
     return () => {
@@ -34,8 +35,10 @@ export function ReplaySavedToast() {
         ●
       </span>
       <div className="replay-toast-body">
-        <p className="replay-toast-title">Replay saved</p>
-        <p className="replay-toast-detail">{toast.message}</p>
+        <p className="replay-toast-title">
+          Clipping {toast.gameName?.trim() || "game"}
+        </p>
+        <p className="replay-toast-detail">{toast.fileName}</p>
       </div>
       <button
         type="button"

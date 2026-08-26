@@ -1,0 +1,10 @@
+name = "533clip-redirect"
+main = "worker.js"
+compatibility_date = "2026-06-28"
+
+[vars]
+B2_ENDPOINT = "https://s3.eu-central-003.backblazeb2.com"
+B2_REGION = "eu-central-003"
+B2_BUCKET = "533clip"
+LINK_EXPIRES_SECONDS = "86400"
+

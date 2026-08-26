@@ -7,6 +7,8 @@ export interface TrimTimelineProps {
   start: number;
   end: number;
   current: number;
+  peaks?: number[];
+  waveform?: number[];
   onStartChange: (t: number) => void;
   onEndChange: (t: number) => void;
   onSeek: (t: number) => void;
@@ -28,6 +30,8 @@ export function TrimTimeline({
   start,
   end,
   current,
+  peaks = [],
+  waveform = [],
   onStartChange,
   onEndChange,
   onSeek,
@@ -37,12 +41,27 @@ export function TrimTimeline({
   const [dragging, setDragging] = useState<"start" | "end" | null>(null);
   /** While dragging a handle, playhead follows the handle (fixes lag / wrong side). */
   const [scrubPreview, setScrubPreview] = useState<number | null>(null);
+  /** Cursor-following ghost line + time tooltip while hovering, mouse-not-down. */
+  const [hoverPct, setHoverPct] = useState<number | null>(null);
 
   const dur = duration > 0 ? duration : 1;
   const startPct = (start / dur) * 100;
   const endPct = (end / dur) * 100;
   const playheadTime = scrubPreview ?? current;
   const playheadPct = clamp((playheadTime / dur) * 100, 0, 100);
+
+  // Bars within this many indices of a peak's nearest bar are drawn in the
+  // accent color, fusing "highlight moment" into the waveform shape itself
+  // instead of a separate row of dots.
+  const highlightedBars = new Set<number>();
+  if (waveform.length > 0) {
+    for (const peak of peaks) {
+      const idx = Math.round((peak / dur) * (waveform.length - 1));
+      for (let i = idx - 1; i <= idx + 1; i++) {
+        if (i >= 0 && i < waveform.length) highlightedBars.add(i);
+      }
+    }
+  }
 
   const timeFromClientX = useCallback(
     (clientX: number) => {
@@ -62,12 +81,10 @@ export function TrimTimeline({
         const next = clamp(t, 0, end - MIN_GAP_SEC);
         setScrubPreview(next);
         onStartChange(next);
-        onSeek(next);
       } else {
         const next = clamp(t, start + MIN_GAP_SEC, dur);
         setScrubPreview(next);
         onEndChange(next);
-        onSeek(next);
       }
     },
     [timeFromClientX, end, start, dur, onStartChange, onEndChange, onSeek],
@@ -113,6 +130,17 @@ export function TrimTimeline({
     setScrubPreview(null);
   };
 
+  const onTrackPointerMove = (e: React.PointerEvent) => {
+    if (dragRef.current) return;
+    const el = trackRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = clamp(e.clientX - rect.left, 0, rect.width);
+    setHoverPct((x / rect.width) * 100);
+  };
+
+  const onTrackPointerLeave = () => setHoverPct(null);
+
   return (
     <div className="trim-timeline">
       <div className="trim-time-row">
@@ -125,12 +153,32 @@ export function TrimTimeline({
 
       <div
         ref={trackRef}
-        className={`trim-track ${dragging ? "is-dragging" : ""}`}
+        className={`trim-track ${dragging ? "is-dragging" : ""} ${hoverPct != null ? "is-hovering" : ""}`}
         onPointerDown={onTrackPointerDown}
+        onPointerMove={onTrackPointerMove}
+        onPointerLeave={onTrackPointerLeave}
         role="slider"
         aria-label="Trim timeline"
       >
         <div className="trim-track-base" />
+
+        {waveform.length > 0 && (
+          <div className="trim-waveform" aria-hidden>
+            {waveform.map((amplitude, i) => (
+              <span
+                key={i}
+                className={`trim-waveform-bar ${highlightedBars.has(i) ? "is-highlight" : ""}`}
+                style={{ height: `${Math.max(6, amplitude * 100)}%` }}
+              />
+            ))}
+          </div>
+        )}
+
+        {hoverPct != null && !dragging && (
+          <div className="trim-hover-line" style={{ left: `${hoverPct}%` }} aria-hidden>
+            <span className="trim-hover-time">{formatTime((hoverPct / 100) * dur)}</span>
+          </div>
+        )}
 
         <div
           className="trim-selection"

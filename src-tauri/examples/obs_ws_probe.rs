@@ -21,7 +21,9 @@ fn auth(password: &str, salt: &str, challenge: &str) -> String {
 }
 
 fn read_password_from_obs_config() -> Option<String> {
-    let path = std::env::var("APPDATA").ok().map(std::path::PathBuf::from)?;
+    let path = std::env::var("APPDATA")
+        .ok()
+        .map(std::path::PathBuf::from)?;
     let path = path
         .join("obs-studio")
         .join("plugin_config")
@@ -29,7 +31,11 @@ fn read_password_from_obs_config() -> Option<String> {
         .join("config.json");
     let raw = std::fs::read_to_string(path).ok()?;
     let v: Value = serde_json::from_str(&raw).ok()?;
-    v.get("server_password")?.as_str().map(str::trim).filter(|s| !s.is_empty()).map(str::to_string)
+    v.get("server_password")?
+        .as_str()
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .map(str::to_string)
 }
 
 #[tokio::main]
@@ -44,9 +50,10 @@ async fn main() {
     let mut req = "ws://127.0.0.1:4455"
         .into_client_request()
         .expect("request");
-    req
-        .headers_mut()
-        .insert("Sec-WebSocket-Protocol", HeaderValue::from_static("obswebsocket.json"));
+    req.headers_mut().insert(
+        "Sec-WebSocket-Protocol",
+        HeaderValue::from_static("obswebsocket.json"),
+    );
 
     let (ws, _) = connect_async(req).await.expect("connect");
     let (mut write, mut read) = ws.split();

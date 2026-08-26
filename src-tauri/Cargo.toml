@@ -1,6 +1,6 @@
 [package]
 name = "five33clip"
-version = "0.1.0"
+version = "0.1.12"
 description = "533clip — high-performance local OBS clip manager"
 authors = ["you"]
 edition = "2021"
@@ -13,11 +13,14 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = ["protocol-asset"] }
+tauri = { version = "2", features = ["protocol-asset", "tray-icon"] }
 tauri-plugin-dialog = "2"
+tauri-plugin-single-instance = "2.4.2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
+tokio-tungstenite = "0.27"
+futures-util = "0.3"
 notify = "8"
 notify-debouncer-full = "0.5"
 thiserror = "2"
@@ -27,8 +30,21 @@ sha2 = "0.10"
 chrono = { version = "0.4", features = ["serde"] }
 parking_lot = "0.12"
 base64 = "0.22"
-tokio-tungstenite = "0.26"
-futures-util = { version = "0.3", default-features = false, features = ["sink", "std"] }
+aws-config = "1"
+aws-credential-types = "1"
+aws-sdk-s3 = "1"
+urlencoding = "2"
+windows = { version = "0.61", features = [
+  "Win32_Foundation",
+  "Win32_Security",
+  "Win32_System_Diagnostics_ToolHelp",
+  "Win32_System_DataExchange",
+  "Win32_System_Memory",
+  "Win32_System_Threading",
+  "Win32_UI_Shell",
+  "Win32_UI_WindowsAndMessaging",
+] }
+drag = "2.1.1"
 
 [profile.dev]
 incremental = true

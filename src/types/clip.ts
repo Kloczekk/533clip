@@ -5,6 +5,7 @@ export interface ClipDetectedPayload {
   filePath: string;
   fileName: string;
   createdAt: string;
+  gameName?: string;
 }
 
 export interface Clip {
@@ -12,12 +13,18 @@ export interface Clip {
   filePath: string;
   fileName: string;
   displayName?: string;
+  gameName?: string;
   createdAt: string;
   duration?: number;
+  audioPeaks?: number[];
+  waveform?: number[];
   resolution?: string;
   thumbnailPath?: string;
   isFavorite: boolean;
   tags: string[];
   status: ClipStatus;
+  shareUrl?: string;
+  shareKey?: string;
+  sharedAt?: string;
 }
 

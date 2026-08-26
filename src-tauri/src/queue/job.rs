@@ -6,14 +6,25 @@ static JOB_COUNTER: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Debug, Clone)]
 pub enum JobKind {
-    Probe { clip_id: String, path: PathBuf },
-    Thumbnail { clip_id: String, path: PathBuf },
+    Probe {
+        clip_id: String,
+        path: PathBuf,
+    },
+    Thumbnail {
+        clip_id: String,
+        path: PathBuf,
+    },
     Trim {
         source_clip_id: String,
         input: PathBuf,
         output: PathBuf,
         start_secs: f64,
         end_secs: f64,
+        delete_original: bool,
+    },
+    AudioPeaks {
+        clip_id: String,
+        path: PathBuf,
     },
 }
 

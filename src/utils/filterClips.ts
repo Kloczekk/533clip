@@ -1,10 +1,12 @@
 import { clipDisplayName } from "./clipDisplay";
+import { gameNameForClip } from "./gameName";
 import type { Clip } from "../types/clip";
 
 export type LibraryFilter =
   | { kind: "all" }
   | { kind: "favorites" }
-  | { kind: "tag"; tag: string };
+  | { kind: "tag"; tag: string }
+  | { kind: "game"; game: string };
 
 export function filterClips(
   clips: Clip[],
@@ -19,6 +21,12 @@ export function filterClips(
       break;
     case "tag":
       result = result.filter((c) => c.tags.includes(filter.tag));
+      break;
+    case "game":
+      result =
+        filter.game.toLowerCase() === "general"
+          ? result
+          : result.filter((c) => gameNameForClip(c) === filter.game);
       break;
     default:
       break;

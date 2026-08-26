@@ -1,6 +1,6 @@
 use crate::models::clip::Clip;
 use parking_lot::RwLock;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
@@ -22,17 +22,8 @@ impl ClipStore {
     pub fn open(data_dir: &Path) -> Result<Self, StoreError> {
         std::fs::create_dir_all(data_dir)?;
         let path = data_dir.join("clips.json");
-        let clips = if path.exists() {
-            let raw = std::fs::read_to_string(&path)?;
-            if raw.trim().is_empty() {
-                HashMap::new()
-            } else {
-                let list: Vec<Clip> = serde_json::from_str(&raw)?;
-                list.into_iter().map(|c| (c.id.clone(), c)).collect()
-            }
-        } else {
-            HashMap::new()
-        };
+        let list: Vec<Clip> = super::load_json_or_default(&path)?;
+        let clips: HashMap<String, Clip> = list.into_iter().map(|c| (c.id.clone(), c)).collect();
 
         Ok(Self {
             path,
@@ -99,6 +90,35 @@ impl ClipStore {
         }
     }
 
+    pub fn remove_missing_files(&self) -> Result<usize, StoreError> {
+        let mut guard = self.inner.write();
+        let missing: Vec<String> = guard
+            .values()
+            .filter(|clip| !Path::new(&clip.file_path).is_file())
+            .map(|clip| clip.id.clone())
+            .collect();
+        for id in &missing {
+            if let Some(clip) = guard.remove(id) {
+                if let Some(thumb) = &clip.thumbnail_path {
+                    let _ = std::fs::remove_file(thumb);
+                }
+            }
+        }
+        if !missing.is_empty() {
+            self.persist(&guard)?;
+        }
+        Ok(missing.len())
+    }
+
+    pub fn thumbnail_paths(&self) -> HashSet<PathBuf> {
+        self.inner
+            .read()
+            .values()
+            .filter_map(|clip| clip.thumbnail_path.as_ref())
+            .map(PathBuf::from)
+            .collect()
+    }
+
     pub fn remove_tag_from_all_clips(&self, tag: &str) -> Result<Vec<Clip>, StoreError> {
         let mut guard = self.inner.write();
         let mut updated = Vec::new();
@@ -130,12 +150,33 @@ impl ClipStore {
         }
     }
 
+    /// Applies `f` to every clip in `ids` under a single write lock and
+    /// persists once, instead of once per id. Use for bulk actions (multi-tag,
+    /// multi-move) so selecting many clips doesn't rewrite clips.json N times.
+    pub fn update_many<F>(&self, ids: &[String], mut f: F) -> Result<Vec<Clip>, StoreError>
+    where
+        F: FnMut(&mut Clip),
+    {
+        let mut guard = self.inner.write();
+        let mut updated = Vec::new();
+        for id in ids {
+            if let Some(clip) = guard.get_mut(id) {
+                f(clip);
+                updated.push(clip.clone());
+            }
+        }
+        if !updated.is_empty() {
+            self.persist(&guard)?;
+        }
+        Ok(updated)
+    }
+
     fn persist(&self, map: &HashMap<String, Clip>) -> Result<(), StoreError> {
         let mut list: Vec<&Clip> = map.values().collect();
         list.sort_by(|a, b| b.created_at.cmp(&a.created_at));
         let owned: Vec<Clip> = list.into_iter().cloned().collect();
         let json = serde_json::to_string_pretty(&owned)?;
-        std::fs::write(&self.path, json)?;
+        super::atomic_write(&self.path, &json)?;
         Ok(())
     }
 }

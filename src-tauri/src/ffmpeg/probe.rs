@@ -55,8 +55,8 @@ pub fn probe_video(path: &Path) -> Result<VideoMetadata, ProbeError> {
         return Err(ProbeError::Failed(stderr.trim().to_string()));
     }
 
-    let parsed: FfprobeRoot = serde_json::from_slice(&output.stdout)
-        .map_err(|e| ProbeError::Parse(e.to_string()))?;
+    let parsed: FfprobeRoot =
+        serde_json::from_slice(&output.stdout).map_err(|e| ProbeError::Parse(e.to_string()))?;
 
     let duration_secs = parsed
         .format
@@ -75,8 +75,12 @@ pub fn probe_video(path: &Path) -> Result<VideoMetadata, ProbeError> {
         })
         .ok_or_else(|| ProbeError::Parse("no video stream".into()))?;
 
-    let width = video.width.ok_or_else(|| ProbeError::Parse("no width".into()))?;
-    let height = video.height.ok_or_else(|| ProbeError::Parse("no height".into()))?;
+    let width = video
+        .width
+        .ok_or_else(|| ProbeError::Parse("no width".into()))?;
+    let height = video
+        .height
+        .ok_or_else(|| ProbeError::Parse("no height".into()))?;
 
     Ok(VideoMetadata {
         duration_secs,
